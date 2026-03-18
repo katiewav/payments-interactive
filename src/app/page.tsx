@@ -8,6 +8,7 @@ import PaymentFlowDiagram from '@/components/PaymentFlowDiagram';
 import ControlPanel from '@/components/ControlPanel';
 import FeeBreakdown from '@/components/FeeBreakdown';
 import ScenarioSwitcher from '@/components/ScenarioSwitcher';
+import ScenarioImpactBanner from '@/components/ScenarioImpactBanner';
 import FinalTakeaway from '@/components/FinalTakeaway';
 import ThemeToggle from '@/components/ThemeToggle';
 import ZoomOut from '@/components/ZoomOut';
@@ -80,16 +81,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Scenario Switcher */}
-      <section className="px-6 pb-12">
-        <div className="max-w-6xl mx-auto">
-          <ScenarioSwitcher
-            activePreset={activePreset}
-            onSelect={handlePresetSelect}
-          />
-        </div>
-      </section>
-
       {/* Interactive Section */}
       <section className="px-6 pb-12">
         <div ref={interactiveSectionRef} className="max-w-6xl mx-auto">
@@ -98,6 +89,36 @@ export default function Home() {
             animate={interactiveInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6 }}
           >
+            {/* Scenario Switcher */}
+            <div className="mb-4">
+              <ScenarioSwitcher
+                activePreset={activePreset}
+                onSelect={handlePresetSelect}
+              />
+            </div>
+
+            {/* Impact Banner — what changed vs baseline */}
+            <div className="mb-4">
+              <ScenarioImpactBanner
+                scenario={scenario}
+                fees={fees}
+                activePreset={activePreset}
+              />
+            </div>
+
+            {/* Narrative summary — moved up for prominence */}
+            <motion.div
+              key={`summary-${JSON.stringify(scenario)}-${activePreset}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4 }}
+              className="mb-4 bg-surface border border-border rounded-xl px-5 py-4"
+            >
+              <p className="text-muted leading-relaxed text-sm">
+                {getSummary(scenario, fees, activePreset)}
+              </p>
+            </motion.div>
+
             {/* Flow Diagram */}
             <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 mb-6">
               <h3 className="text-xs tracking-[0.25em] uppercase text-muted mb-6">
@@ -116,22 +137,6 @@ export default function Home() {
               <ControlPanel scenario={scenario} onChange={handleScenarioChange} />
               <FeeBreakdown fees={fees} />
             </div>
-
-            {/* Narrative summary */}
-            <motion.div
-              key={`${JSON.stringify(scenario)}-${activePreset}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="mt-6 bg-surface border border-border rounded-2xl p-6 md:p-8"
-            >
-              <h3 className="text-xs tracking-[0.25em] uppercase text-muted mb-4">
-                Summary
-              </h3>
-              <p className="text-muted leading-relaxed text-sm">
-                {getSummary(scenario, fees, activePreset)}
-              </p>
-            </motion.div>
           </motion.div>
         </div>
       </section>

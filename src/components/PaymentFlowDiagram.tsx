@@ -70,13 +70,17 @@ export default function PaymentFlowDiagram({ scenario, fees, showRetryPath, acti
     { id: 'merchant', label: 'Merchant', x: 460, y: 330 },
   ], []);
 
+  const isCrossBorder = !scenario.isDomestic;
+  const hasPlatformFee = !!scenario.platformTakeRate;
+  const isRetry = scenario.retryEnabled;
+
   const edges = useMemo(() => [
     { from: 'customer', to: 'processor', label: formatCurrency(scenario.amount) },
     { from: 'processor', to: 'acquirer', label: '' },
-    { from: 'acquirer', to: 'network', label: '' },
+    { from: 'acquirer', to: 'network', label: isCrossBorder ? 'Cross-border' : '' },
     { from: 'network', to: 'issuer', label: 'Auth request' },
     { from: 'processor', to: 'merchant', label: formatCurrency(fees.netToMerchant) },
-  ], [scenario.amount, fees.netToMerchant]);
+  ], [scenario.amount, fees.netToMerchant, isCrossBorder]);
 
   const getNode = (id: string) => nodes.find((n) => n.id === id)!;
 
@@ -134,9 +138,20 @@ export default function PaymentFlowDiagram({ scenario, fees, showRetryPath, acti
             <g key={`${edge.from}-${edge.to}`}>
               <motion.line
                 x1={startX} y1={startY} x2={endX} y2={endY}
-                stroke="var(--color-accent)"
-                strokeWidth={1}
-                strokeOpacity={showChargeback ? 0.15 : 0.4}
+                stroke={
+                  isCrossBorder && (edge.from === 'acquirer' || edge.from === 'network')
+                    ? 'var(--color-warning)'
+                    : hasPlatformFee && edge.from === 'processor' && edge.to === 'merchant'
+                    ? 'var(--color-fee-platform)'
+                    : 'var(--color-accent)'
+                }
+                strokeWidth={
+                  isCrossBorder && (edge.from === 'acquirer' || edge.from === 'network') ? 2
+                    : hasPlatformFee && edge.from === 'processor' && edge.to === 'merchant' ? 2
+                    : 1
+                }
+                strokeOpacity={showChargeback ? 0.15 : 0.5}
+                strokeDasharray={isCrossBorder && edge.from === 'acquirer' ? '6 3' : undefined}
                 markerEnd="url(#arrowhead)"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -392,6 +407,32 @@ export default function PaymentFlowDiagram({ scenario, fees, showRetryPath, acti
             }}
           />
         ))}
+
+        {/* Scenario mode badge */}
+        {isCrossBorder && !showChargeback && (
+          <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+            <rect x={540} y={250} width={180} height={28} rx={14} fill="var(--color-warning)" opacity={0.12} />
+            <text x={630} y={268} textAnchor="middle" fill="var(--color-warning)" fontSize={10} fontFamily="var(--font-mono)" fontWeight={500}>
+              Cross-border + FX fees
+            </text>
+          </motion.g>
+        )}
+        {hasPlatformFee && !showChargeback && (
+          <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+            <rect x={310} y={270} width={160} height={28} rx={14} fill="var(--color-fee-platform)" opacity={0.15} />
+            <text x={390} y={288} textAnchor="middle" fill="var(--color-fee-platform)" fontSize={10} fontFamily="var(--font-mono)" fontWeight={500}>
+              Platform takes {scenario.platformTakeRate ? `${(scenario.platformTakeRate * 100).toFixed(0)}%` : ''}
+            </text>
+          </motion.g>
+        )}
+        {isRetry && !showChargeback && (
+          <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+            <rect x={680} y={365} width={160} height={28} rx={14} fill="var(--color-danger)" opacity={0.1} />
+            <text x={760} y={383} textAnchor="middle" fill="var(--color-danger)" fontSize={10} fontFamily="var(--font-mono)" fontWeight={500}>
+              Smart retry enabled
+            </text>
+          </motion.g>
+        )}
 
         {/* Legend */}
         <g transform="translate(30, 430)">
