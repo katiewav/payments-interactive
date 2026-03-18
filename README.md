@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Where Does $100 Go?
 
-## Getting Started
+An editorial-quality interactive explainer that traces a card payment through the payments ecosystem — from authorization to settlement to payout — showing how fees, time, and intermediaries shape what the merchant actually receives.
 
-First, run the development server:
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx vercel
+```
 
-## Learn More
+Or connect the repo to [Vercel](https://vercel.com) for automatic deployments.
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS v4
+- Framer Motion
+- Frontend-only (no backend required)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout, fonts, metadata
+│   ├── page.tsx            # Main page orchestrating all sections
+│   └── globals.css         # Theme tokens, animations, utilities
+├── components/
+│   ├── Hero.tsx            # Above-the-fold headline + animated flow
+│   ├── ScrollNarrative.tsx # Progressive reveal scenes (A–F)
+│   ├── PaymentFlowDiagram.tsx  # Interactive SVG network diagram
+│   ├── ControlPanel.tsx    # Scenario configuration inputs
+│   ├── FeeBreakdown.tsx    # Dynamic fee visualization
+│   ├── ScenarioSwitcher.tsx    # Preset scenario comparison
+│   ├── AnnotationCard.tsx  # Hover/click educational popups
+│   └── FinalTakeaway.tsx   # Closing editorial statement
+└── lib/
+    ├── types.ts            # TypeScript interfaces
+    ├── paymentModel.ts     # Fee calculation engine
+    ├── annotationData.ts   # Educational annotation content
+    ├── scenarios.ts        # Preset scenario configurations
+    └── hooks.ts            # Intersection observer, reduced motion
+```
