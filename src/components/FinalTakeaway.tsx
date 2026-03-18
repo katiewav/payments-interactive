@@ -62,6 +62,18 @@ export default function FinalTakeaway() {
           Built as an independent interactive explainer of how digital payments actually work.
           <br />
           Fees shown are illustrative. Actual rates vary.
+          <br />
+          <span className="mt-3 inline-block">
+            Made by{' '}
+            <a
+              href="https://twitter.com/katiewav"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted/60 hover:text-accent transition-colors"
+            >
+              @katiewav
+            </a>
+          </span>
         </p>
       </motion.footer>
     </section>
