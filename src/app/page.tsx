@@ -9,6 +9,7 @@ import ControlPanel from '@/components/ControlPanel';
 import FeeBreakdown from '@/components/FeeBreakdown';
 import ScenarioSwitcher from '@/components/ScenarioSwitcher';
 import ScenarioImpactBanner from '@/components/ScenarioImpactBanner';
+import StakeholderReference from '@/components/StakeholderReference';
 import FinalTakeaway from '@/components/FinalTakeaway';
 import ThemeToggle from '@/components/ThemeToggle';
 import ZoomOut from '@/components/ZoomOut';
@@ -118,6 +119,9 @@ export default function Home() {
                 {getSummary(scenario, fees, activePreset)}
               </p>
             </motion.div>
+
+            {/* Stakeholder reference — collapsible definitions */}
+            <StakeholderReference />
 
             {/* Flow Diagram */}
             <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 mb-6">
