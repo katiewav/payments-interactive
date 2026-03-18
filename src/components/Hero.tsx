@@ -62,7 +62,7 @@ export default function Hero({ onCtaClick }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xs tracking-[0.3em] uppercase text-muted mb-8"
+          className="text-xs tracking-[0.3em] uppercase text-muted mb-5"
         >
           An Interactive Explainer
         </motion.p>
@@ -85,7 +85,7 @@ export default function Hero({ onCtaClick }: Props) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed mb-12"
+          className="text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed mb-8"
         >
           A card payment feels instant. It isn&apos;t. Follow the money through the
           hidden layers of the payments system.
@@ -96,7 +96,7 @@ export default function Hero({ onCtaClick }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.2, delay: 1.2 }}
-          className="text-xs font-mono text-muted/40 mb-12"
+          className="text-xs font-mono text-muted/40 mb-8"
         >
           One of 2.17 billion card transactions today
         </motion.p>
@@ -106,7 +106,7 @@ export default function Hero({ onCtaClick }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.8 }}
-          className="w-full max-w-3xl mx-auto mb-12"
+          className="w-full max-w-3xl mx-auto mb-8"
         >
           <svg viewBox="0 0 820 320" className="w-full h-auto">
             <defs>

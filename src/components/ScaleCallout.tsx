@@ -23,7 +23,7 @@ export default function ScaleCallout({ stat, text, className = '' }: Props) {
       initial={{ opacity: 0 }}
       animate={isInView ? { opacity: 1 } : {}}
       transition={{ duration: 1.2, ease: 'easeOut' }}
-      className={`py-6 ${className}`}
+      className={`py-3 ${className}`}
     >
       <div className="flex items-start gap-3">
         <div className="w-8 h-px bg-accent/40 mt-[10px] shrink-0" />

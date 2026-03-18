@@ -36,7 +36,7 @@ export default function ZoomOut() {
   }, []);
 
   return (
-    <section ref={containerRef} className="relative py-32 px-6 overflow-hidden">
+    <section ref={containerRef} className="relative py-16 px-6 overflow-hidden">
       {/* Dot field */}
       <motion.div
         style={{ opacity: dotsOpacity }}

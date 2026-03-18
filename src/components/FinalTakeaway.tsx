@@ -8,7 +8,7 @@ export default function FinalTakeaway() {
   const { ref, isInView } = useInView(0.3);
 
   return (
-    <section ref={ref} className="relative py-40 px-6 overflow-hidden">
+    <section ref={ref} className="relative py-20 px-6 overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-surface to-background" />
 
@@ -23,7 +23,7 @@ export default function FinalTakeaway() {
           initial={{ scaleX: 0 }}
           animate={isInView ? { scaleX: 1 } : {}}
           transition={{ duration: 1.2, delay: 0.3 }}
-          className="w-16 h-px bg-accent mx-auto mb-12"
+          className="w-16 h-px bg-accent mx-auto mb-8"
         />
 
         <h2
@@ -56,7 +56,7 @@ export default function FinalTakeaway() {
         initial={{ opacity: 0 }}
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ delay: 1.2, duration: 0.8 }}
-        className="relative z-10 max-w-2xl mx-auto text-center mt-24"
+        className="relative z-10 max-w-2xl mx-auto text-center mt-14"
       >
         <div className="h-px bg-border mb-8" />
         <p className="text-xs text-muted/40 leading-relaxed">

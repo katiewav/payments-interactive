@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from '@/lib/hooks';
 import AnnotationCard from './AnnotationCard';
 import ScaleCallout from './ScaleCallout';
@@ -91,12 +92,66 @@ function FeeLayer({
   return inner;
 }
 
+const PROCESSOR_ITEMS = [
+  { icon: '⟨⟩', title: 'Unified API layer', body: 'A single integration can replace direct bank relationships for many merchants. Some processors can route transactions to different acquirers based on card type or geography.' },
+  { icon: '⊘', title: 'Fraud and risk screening', body: 'The processor can evaluate fraud signals — velocity checks, device fingerprinting, address verification — before forwarding to the acquirer.' },
+  { icon: '⇄', title: 'Network routing', body: 'In some configurations, transactions can be routed through multiple networks. The processor may select the path with a better combination of cost and approval rate.' },
+  { icon: '↻', title: 'Decline recovery', body: 'When a payment fails with a soft decline, the processor can retry later. For recurring billing, this can help recover a portion of otherwise-lost revenue.' },
+  { icon: '≡', title: 'Settlement reconciliation', body: 'Tracks transactions through clearing and settlement, matching authorizations against actual settled amounts.' },
+  { icon: '→', title: 'Payout coordination', body: 'Calculates the net amount, holds reserves if needed, and initiates the payout to the merchant on the agreed schedule.' },
+];
+
+function ProcessorAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <div className="space-y-1.5 my-4">
+      {PROCESSOR_ITEMS.map((item, i) => {
+        const isOpen = openIndex === i;
+        return (
+          <div key={item.title} className="bg-surface border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setOpenIndex(isOpen ? null : i)}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left cursor-pointer hover:bg-surface-elevated transition-colors"
+              aria-expanded={isOpen}
+            >
+              <span className="text-base text-accent font-mono shrink-0 w-6 text-center" aria-hidden="true">{item.icon}</span>
+              <span className="text-sm font-medium text-foreground flex-1">{item.title}</span>
+              <motion.span
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+                className="text-muted/40 text-xs"
+                aria-hidden="true"
+              >
+                ▾
+              </motion.span>
+            </button>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-xs text-muted leading-relaxed px-4 pb-3 pl-[52px]">{item.body}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const getAnnotation = (id: string) => annotations.find((a) => a.id === id)!;
 
 export default function ScrollNarrative() {
   return (
-    <section className="relative py-32 px-6" aria-label="Payment system explainer">
-      <div className="space-y-40">
+    <section className="relative py-16 px-6" aria-label="Payment system explainer">
+      <div className="space-y-20">
         {/* Scene A: The Simple Version */}
         <Scene>
           <SceneLabel label="The Simple Version" />
@@ -111,7 +166,7 @@ export default function ScrollNarrative() {
             to merchant. $100 in, $100 out. Instant.
           </p>
 
-          <div className="flex items-center justify-center gap-8 my-12">
+          <div className="flex items-center justify-center gap-8 my-8">
             <div className="flex flex-col items-center gap-2">
               <div className="w-16 h-16 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
                 <span className="text-xl" aria-hidden="true">👤</span>
@@ -209,7 +264,7 @@ export default function ScrollNarrative() {
           </p>
 
           {/* Visual fee breakdown — blended model */}
-          <div className="relative my-10">
+          <div className="relative my-6">
             {/* Gross amount bar */}
             <div className="h-12 bg-accent/20 rounded-lg relative overflow-hidden mb-1">
               <motion.div
@@ -275,7 +330,7 @@ export default function ScrollNarrative() {
             Authorization is fast. Everything else takes days.
           </p>
 
-          <div className="space-y-6 my-10">
+          <div className="space-y-6 my-6">
             {[
               {
                 label: 'Authorization',
@@ -343,7 +398,7 @@ export default function ScrollNarrative() {
           </p>
 
           <AnnotationCard annotation={getAnnotation('retry')} position="bottom" block>
-            <div className="bg-surface border border-border rounded-xl p-6 my-8 cursor-pointer hover:border-accent/30 transition-colors w-full">
+            <div className="bg-surface border border-border rounded-xl p-5 my-5 cursor-pointer hover:border-accent/30 transition-colors w-full">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center shrink-0">
@@ -395,7 +450,7 @@ export default function ScrollNarrative() {
           />
 
           <AnnotationCard annotation={getAnnotation('chargeback')} position="bottom" block>
-            <div className="bg-surface border border-border rounded-xl p-6 my-8 cursor-pointer hover:border-[var(--color-chargeback)]/30 transition-colors w-full">
+            <div className="bg-surface border border-border rounded-xl p-5 my-5 cursor-pointer hover:border-[var(--color-chargeback)]/30 transition-colors w-full">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-[var(--color-chargeback)]/20 flex items-center justify-center shrink-0">
@@ -440,60 +495,13 @@ export default function ScrollNarrative() {
             an acquiring bank, integrate with card networks, build fraud screening,
             handle PCI compliance, and reconcile transactions manually.
           </p>
-          <p className="text-muted text-lg leading-relaxed mb-10">
-            The processor sits between the merchant and the acquiring layer.
-            Depending on configuration, it can coordinate much of the payment
-            lifecycle on the merchant&apos;s behalf.
+          <p className="text-muted text-lg leading-relaxed mb-6">
+            The processor sits between the merchant and the acquiring layer,
+            coordinating much of the payment lifecycle.
           </p>
 
-          {/* Detailed breakdown */}
-          <div className="space-y-4 my-8">
-            {[
-              {
-                icon: '⟨⟩',
-                title: 'Unified API layer',
-                body: 'A single integration can replace direct bank relationships for many merchants. Some processors can route transactions to different acquirers based on card type or geography.',
-              },
-              {
-                icon: '⊘',
-                title: 'Fraud and risk screening',
-                body: 'Before forwarding to the acquirer, the processor can evaluate fraud signals — velocity checks, device fingerprinting, address verification — and decide whether to block, flag, or allow the transaction.',
-              },
-              {
-                icon: '⇄',
-                title: 'Network routing',
-                body: 'In some configurations, transactions can be routed through multiple networks. The processor may select the path with a better combination of cost and approval rate.',
-              },
-              {
-                icon: '↻',
-                title: 'Decline recovery',
-                body: 'When a payment fails with a soft decline, the processor can retry at a later time. For recurring billing, this can help recover a portion of otherwise-lost revenue.',
-              },
-              {
-                icon: '≡',
-                title: 'Settlement reconciliation',
-                body: 'The processor tracks transactions through clearing and settlement, matching authorizations against actual settled amounts and flagging discrepancies.',
-              },
-              {
-                icon: '→',
-                title: 'Payout coordination',
-                body: 'After settlement, the processor calculates the net amount, holds reserves if needed, and initiates the payout to the merchant on the agreed schedule.',
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="flex gap-4 p-4 bg-surface border border-border rounded-xl"
-              >
-                <span className="text-lg text-accent font-mono mt-0.5 shrink-0 w-8 text-center" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <div>
-                  <h4 className="text-sm font-medium text-foreground mb-1">{item.title}</h4>
-                  <p className="text-xs text-muted leading-relaxed">{item.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Accordion breakdown */}
+          <ProcessorAccordion />
 
           <p className="text-sm text-muted/60 text-center italic mt-4">
             The processor abstracts complexity. It does not remove it.
