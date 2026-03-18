@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from '@/lib/hooks';
 import AnnotationCard from './AnnotationCard';
+import ScaleCallout from './ScaleCallout';
 import { annotations } from '@/lib/annotationData';
 
 function Scene({
@@ -137,6 +138,11 @@ export default function ScrollNarrative() {
           <p className="text-center text-muted/60 text-sm italic">
             This is the illusion.
           </p>
+
+          <ScaleCallout
+            stat="25,091 per second"
+            text="This is one of roughly 2.17 billion card transactions that happen each day."
+          />
         </Scene>
 
         {/* Scene B: The Actual Route */}
@@ -180,6 +186,11 @@ export default function ScrollNarrative() {
               </AnnotationCard>
             ))}
           </div>
+
+          <ScaleCallout
+            stat="791 billion"
+            text="Globally, card networks handled roughly 791 billion transactions last year. Every one passed through a chain like this."
+          />
         </Scene>
 
         {/* Scene C: Fees */}
@@ -328,11 +339,13 @@ export default function ScrollNarrative() {
             className="text-3xl md:text-4xl font-light leading-tight mb-4"
             style={{ fontFamily: 'var(--font-editorial)' }}
           >
-            Some payments fail and recover.
+            Some payments fail. Some recover.
           </h2>
           <p className="text-muted text-lg leading-relaxed mb-8">
             Payment success is probabilistic, not guaranteed. Soft declines
-            from temporary issues can be recovered with intelligent retry logic.
+            from temporary issues — insufficient funds, network timeouts, issuer
+            throttling — can often be recovered with intelligent retry logic.
+            All of them pass through systems of trust.
           </p>
 
           <AnnotationCard annotation={getAnnotation('retry')} position="bottom" block>
@@ -376,11 +389,16 @@ export default function ScrollNarrative() {
           >
             Chargebacks reverse the flow.
           </h2>
-          <p className="text-muted text-lg leading-relaxed mb-8">
+          <p className="text-muted text-lg leading-relaxed mb-4">
             When a cardholder disputes a transaction, the entire payment
             reverses — through every intermediary, back to the customer.
             The merchant loses the payment, pays a fee, and may lose the goods already delivered.
           </p>
+
+          <ScaleCallout
+            stat="324 million annually"
+            text="Chargebacks are not edge cases. Global chargeback volume is projected to reach 324 million transactions per year by 2028 — systemic friction built into the system."
+          />
 
           <AnnotationCard annotation={getAnnotation('chargeback')} position="bottom" block>
             <div className="bg-surface border border-border rounded-xl p-6 my-8 cursor-pointer hover:border-[var(--color-chargeback)]/30 transition-colors w-full">
@@ -483,7 +501,12 @@ export default function ScrollNarrative() {
             ))}
           </div>
 
-          <p className="text-sm text-muted/60 text-center italic mt-8">
+          <ScaleCallout
+            stat="$14.2 trillion"
+            text="Visa alone processed 257.5 billion transactions and $14.2 trillion in payments volume in fiscal 2025. The scale of what processors orchestrate is difficult to overstate."
+          />
+
+          <p className="text-sm text-muted/60 text-center italic mt-4">
             The processor abstracts complexity. It does not remove it.
           </p>
         </Scene>

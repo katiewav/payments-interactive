@@ -91,6 +91,16 @@ export default function Hero({ onCtaClick }: Props) {
           hidden layers of the payments system.
         </motion.p>
 
+        {/* Scale context */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 1.2 }}
+          className="text-xs font-mono text-muted/40 mb-12"
+        >
+          One of 2.17 billion card transactions today
+        </motion.p>
+
         {/* Flow diagram */}
         <motion.div
           initial={{ opacity: 0 }}

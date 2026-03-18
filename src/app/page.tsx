@@ -10,6 +10,7 @@ import FeeBreakdown from '@/components/FeeBreakdown';
 import ScenarioSwitcher from '@/components/ScenarioSwitcher';
 import FinalTakeaway from '@/components/FinalTakeaway';
 import ThemeToggle from '@/components/ThemeToggle';
+import ZoomOut from '@/components/ZoomOut';
 import { DEFAULT_SCENARIO, calculateFees } from '@/lib/paymentModel';
 import type { PaymentScenario, ScenarioPreset } from '@/lib/types';
 import { useInView } from '@/lib/hooks';
@@ -49,6 +50,9 @@ export default function Home() {
       <div ref={narrativeRef}>
         <ScrollNarrative />
       </div>
+
+      {/* Zoom Out moment */}
+      <ZoomOut />
 
       {/* Transition into interactive */}
       <section className="py-24 px-6">

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useInView } from '@/lib/hooks';
+import MethodologyNote from './MethodologyNote';
 
 export default function FinalTakeaway() {
   const { ref, isInView } = useInView(0.3);
@@ -35,8 +36,8 @@ export default function FinalTakeaway() {
         </h2>
 
         <p className="text-lg md:text-xl text-muted leading-relaxed mb-4">
-          It is a coordinated system of authorization, routing,
-          fees, risk, and settlement.
+          It is the hidden architecture of commerce — routed, verified,
+          priced, and delayed — repeated billions of times a day.
         </p>
 
         <motion.p
@@ -46,7 +47,7 @@ export default function FinalTakeaway() {
           className="text-muted/40 text-sm mt-12"
           style={{ fontFamily: 'var(--font-editorial)' }}
         >
-          It is a system.
+          What looks like a tap is really a network.
         </motion.p>
       </motion.div>
 
@@ -75,6 +76,7 @@ export default function FinalTakeaway() {
             </a>
           </span>
         </p>
+        <MethodologyNote />
       </motion.footer>
     </section>
   );
