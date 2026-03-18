@@ -38,11 +38,13 @@ export function calculateFees(scenario: PaymentScenario): FeeBreakdown {
   const interchangeFee = amount * Math.max(interchangeRate, 0.01);
   const networkFee = amount * SYSTEM_ECONOMICS.network_percent;
 
-  // Cross-border fee IS additive (separate from blended rate)
+  // Cross-border fees ARE additive (separate from blended rate)
+  // Stripe charges 3.1% + $0.30 for international cards (vs 2.9% domestic)
+  // plus a 1.5% cross-border surcharge
   let crossBorderFee = 0;
   if (!scenario.isDomestic) {
-    crossBorderFee = amount * 0.015; // 1.5% cross-border + FX surcharge
-    processorFee += amount * 0.01;   // additional processor surcharge for intl
+    crossBorderFee = amount * 0.015;  // 1.5% cross-border surcharge
+    processorFee += amount * 0.002;   // 0.2% uplift (3.1% vs 2.9% for intl cards)
   }
 
   // Platform fee IS additive
@@ -58,10 +60,10 @@ export function calculateFees(scenario: PaymentScenario): FeeBreakdown {
   let settlementDays: [number, number] = [1, 3];
   if (!scenario.isDomestic) settlementDays = [2, 5];
 
-  // Payout timing
-  let payoutDays: [number, number] = [2, 7];
+  // Payout timing (Stripe standard is T+2 for US card payments)
+  let payoutDays: [number, number] = [2, 3];
   if (scenario.isFasterPayout) payoutDays = [0, 1];
-  if (!scenario.isDomestic) payoutDays = [payoutDays[0] + 1, payoutDays[1] + 2];
+  if (!scenario.isDomestic) payoutDays = [payoutDays[0] + 1, payoutDays[1] + 3];
 
   // Retry impact
   let retryImpact = '';

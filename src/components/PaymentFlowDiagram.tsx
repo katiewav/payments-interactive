@@ -261,7 +261,7 @@ export default function PaymentFlowDiagram({ scenario, fees, showRetryPath, acti
 
             {/* Chargeback fee label on merchant */}
             <text x={460} y={390} textAnchor="middle" fill="var(--color-chargeback)" fontSize={10} fontFamily="var(--font-mono)" fontWeight={500}>
-              −{formatCurrency(fees.grossAmount)} + $15 fee
+              −{formatCurrency(fees.grossAmount)} + ~$15–$25 fee
             </text>
 
             {/* Return to cardholder */}

@@ -243,8 +243,8 @@ export default function ScrollNarrative() {
           </div>
 
           <ScaleCallout
-            stat="791 billion"
-            text="Globally, card networks handled roughly 791 billion transactions in 2024. Every one passed through a chain like this."
+            stat="700+ billion"
+            text="Globally, the major card networks handled more than 700 billion purchase transactions in 2024. Every one passed through a chain like this."
           />
         </Scene>
 
@@ -348,8 +348,8 @@ export default function ScrollNarrative() {
               },
               {
                 label: 'Payout',
-                time: '2–7 business days',
-                width: '85%',
+                time: 'T+2 (standard)',
+                width: '50%',
                 color: 'var(--color-fee-processor)',
                 annotation: getAnnotation('payout'),
               },
@@ -472,7 +472,7 @@ export default function ScrollNarrative() {
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-foreground">Merchant debited + chargeback fee</div>
-                    <div className="text-xs text-muted">$100 + ~$15 fee. Can submit evidence to dispute.</div>
+                    <div className="text-xs text-muted">$100 + ~$15–$25 fee. Can submit evidence to dispute.</div>
                   </div>
                   <span className="text-xs font-mono text-[var(--color-chargeback)]">60–120 days</span>
                 </div>

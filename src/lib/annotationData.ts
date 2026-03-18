@@ -47,7 +47,7 @@ export const annotations: AnnotationCard[] = [
     id: 'payout',
     title: 'Payout ≠ settlement',
     body: 'Settlement is when the acquiring bank receives funds. Payout is when the merchant actually gets their money. These are separate events with separate timing.',
-    detail: 'Standard payouts take 2–7 business days after the transaction. Instant payouts are available but cost an additional fee (typically 1%).',
+    detail: 'Standard payouts are typically T+2 (2 business days) for US card payments. Instant payouts are available but cost an additional fee (typically 1%). International payouts may take longer.',
   },
   {
     id: 'retry',
@@ -58,8 +58,8 @@ export const annotations: AnnotationCard[] = [
   {
     id: 'chargeback',
     title: 'Chargebacks reverse the flow',
-    body: 'A chargeback is a forced reversal initiated by the cardholder\'s bank. The merchant loses the payment amount, pays a chargeback fee, and may lose the goods or service already delivered.',
-    detail: 'Chargebacks typically take 60–120 days to resolve. The merchant can dispute with evidence, but the issuing bank makes the final decision. High chargeback rates can lead to account termination by the acquirer.',
+    body: 'A chargeback is a forced reversal initiated by the cardholder\'s bank. The merchant loses the payment amount, pays a chargeback fee ($15–$25 typical), and may lose the goods or service already delivered.',
+    detail: 'Chargebacks typically take 60–120 days to resolve. The merchant can submit evidence to dispute, but the issuing bank makes the final decision. High chargeback rates can lead to account termination by the acquirer.',
   },
 ];
 

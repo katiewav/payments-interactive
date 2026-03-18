@@ -37,18 +37,25 @@ export default function MethodologyNote() {
                 Actual rates vary by processor agreement, card type, and merchant category.
               </p>
               <p>
+                <strong className="text-muted/50">Cross-border fees.</strong>{' '}
+                International card surcharges reflect Stripe&apos;s published pricing:
+                +0.2% processor uplift plus 1.5% cross-border fee. Currency
+                conversion fees (if applicable) are not modeled separately.
+              </p>
+              <p>
                 <strong className="text-muted/50">Scale statistics.</strong>{' '}
-                Transaction volumes and system-scale figures are drawn from
-                public industry sources including Nilson Report, Visa and
-                Mastercard fiscal filings, and Juniper Research. Chargeback
-                projections are from industry forecasts. Stablecoin volume
-                estimates reflect approximate on-chain settlement activity.
+                Transaction volumes are drawn from Visa and Mastercard fiscal
+                filings and Nilson Report data. The 700B+ figure reflects
+                estimated global purchase transactions across major card
+                networks for 2024. Chargeback projections (324M by 2028) are
+                from Mastercard / Chargebacks911 industry forecasts.
               </p>
               <p>
                 <strong className="text-muted/50">Timing.</strong>{' '}
-                Settlement and payout windows are simplified estimates.
-                Actual timing depends on processor, acquirer, network batch
-                cycles, and merchant risk profile.
+                Settlement windows (1–3 days) reflect typical network batch
+                cycles. Payout timing (T+2 standard) reflects Stripe&apos;s published
+                US schedule. Actual timing depends on processor, acquirer,
+                and merchant risk profile.
               </p>
               <p>
                 This piece is educational, not a pricing tool or financial advice.

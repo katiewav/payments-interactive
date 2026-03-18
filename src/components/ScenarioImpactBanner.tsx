@@ -26,8 +26,8 @@ export default function ScenarioImpactBanner({ scenario, fees, activePreset }: P
 
     if (activePreset === 'chargeback') {
       return [
-        { label: 'Merchant loses', value: formatCurrency(scenario.amount + 15), direction: 'warning', icon: '⊘' },
-        { label: 'Chargeback fee', value: '~$15', direction: 'warning', icon: '↩' },
+        { label: 'Merchant loses', value: `${formatCurrency(scenario.amount + 15)}–${formatCurrency(scenario.amount + 25)}`, direction: 'warning', icon: '⊘' },
+        { label: 'Chargeback fee', value: '~$15–$25', direction: 'warning', icon: '↩' },
         { label: 'Resolution time', value: '60–120 days', direction: 'neutral', icon: '◷' },
         { label: 'Net to merchant', value: formatCurrency(0), direction: 'down', icon: '→' },
       ];

@@ -153,7 +153,7 @@ function getSummary(
   activePreset: ScenarioPreset | null
 ): string {
   if (activePreset === 'chargeback') {
-    return `A $${scenario.amount.toFixed(2)} payment is disputed by the cardholder. The full $${scenario.amount.toFixed(2)} reverses through the chain — from the issuing bank, through the network, to the acquiring bank, and back to the processor. The merchant loses the original payment plus a ~$15 chargeback fee, totaling $${(scenario.amount + 15).toFixed(2)}. The dispute process typically takes 60–120 days to resolve.`;
+    return `A $${scenario.amount.toFixed(2)} payment is disputed by the cardholder. The full $${scenario.amount.toFixed(2)} reverses through the chain — from the issuing bank, through the network, to the acquiring bank, and back to the processor. The merchant loses the original payment plus a chargeback fee (typically $15–$25), totaling $${(scenario.amount + 15).toFixed(2)}–$${(scenario.amount + 25).toFixed(2)}. The dispute process typically takes 60–120 days to resolve.`;
   }
 
   const parts: string[] = [];

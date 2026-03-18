@@ -86,9 +86,9 @@ export default function ZoomOut() {
           transition={{ duration: 1, delay: 0.8 }}
           className="text-muted text-lg leading-relaxed mb-4"
         >
-          This flow repeats 25,091 times per second.
+          This flow repeats thousands of times per second.
           <br />
-          2.17 billion times per day. 791 billion times a year.
+          Roughly two billion times per day. Over 700 billion times a year.
         </motion.p>
 
         <motion.p
