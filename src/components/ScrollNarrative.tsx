@@ -29,7 +29,7 @@ function Scene({
 
 function SceneLabel({ label }: { label: string }) {
   return (
-    <span className="text-[10px] tracking-[0.25em] uppercase text-muted/60 block mb-4">
+    <span className="text-[10px] tracking-[0.25em] uppercase text-muted/60 block mb-4" aria-hidden="true">
       {label}
     </span>
   );
@@ -37,11 +37,11 @@ function SceneLabel({ label }: { label: string }) {
 
 function FlowChain({ nodes, highlighted }: { nodes: { name: string; sub?: string }[]; highlighted?: string[] }) {
   return (
-    <div className="flex items-center gap-0 flex-wrap justify-center my-8">
+    <div className="flex items-center gap-0 flex-wrap justify-center my-8" role="list" aria-label="Payment chain">
       {nodes.map((node, i) => {
         const isHighlighted = highlighted?.includes(node.name);
         return (
-          <div key={node.name} className="flex items-center">
+          <div key={node.name} className="flex items-center" role="listitem">
             <div
               className={`px-4 py-2 rounded-lg border text-sm transition-all text-center ${
                 isHighlighted
@@ -53,7 +53,7 @@ function FlowChain({ nodes, highlighted }: { nodes: { name: string; sub?: string
               {node.sub && <span className="text-[9px] text-muted/60 block">{node.sub}</span>}
             </div>
             {i < nodes.length - 1 && (
-              <div className="mx-1 text-muted/30">→</div>
+              <div className="mx-1 text-muted/30" aria-hidden="true">→</div>
             )}
           </div>
         );
@@ -75,7 +75,7 @@ function FeeLayer({
 }) {
   const inner = (
     <div className="flex items-center gap-3 py-2.5">
-      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+      <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} aria-hidden="true" />
       <span className="text-sm text-muted flex-1">{label}</span>
       <span className="text-sm font-mono text-foreground">{amount}</span>
     </div>
@@ -95,7 +95,7 @@ const getAnnotation = (id: string) => annotations.find((a) => a.id === id)!;
 
 export default function ScrollNarrative() {
   return (
-    <section className="relative py-32 px-6">
+    <section className="relative py-32 px-6" aria-label="Payment system explainer">
       <div className="space-y-40">
         {/* Scene A: The Simple Version */}
         <Scene>
@@ -114,7 +114,7 @@ export default function ScrollNarrative() {
           <div className="flex items-center justify-center gap-8 my-12">
             <div className="flex flex-col items-center gap-2">
               <div className="w-16 h-16 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
-                <span className="text-xl">👤</span>
+                <span className="text-xl" aria-hidden="true">👤</span>
               </div>
               <span className="text-xs text-muted">Cardholder</span>
             </div>
@@ -125,11 +125,12 @@ export default function ScrollNarrative() {
               transition={{ duration: 1, delay: 0.3 }}
               viewport={{ once: true }}
               className="h-px w-40 bg-gradient-to-r from-accent/60 to-accent/20 origin-left"
+              aria-hidden="true"
             />
 
             <div className="flex flex-col items-center gap-2">
               <div className="w-16 h-16 rounded-full bg-surface-elevated border border-border flex items-center justify-center">
-                <span className="text-xl">🏪</span>
+                <span className="text-xl" aria-hidden="true">🏪</span>
               </div>
               <span className="text-xs text-muted">Merchant</span>
             </div>
@@ -138,11 +139,6 @@ export default function ScrollNarrative() {
           <p className="text-center text-muted/60 text-sm italic">
             This is the illusion.
           </p>
-
-          <ScaleCallout
-            stat="25,091 per second"
-            text="This is one of roughly 2.17 billion card transactions that happen each day."
-          />
         </Scene>
 
         {/* Scene B: The Actual Route */}
@@ -152,11 +148,15 @@ export default function ScrollNarrative() {
             className="text-3xl md:text-4xl font-light leading-tight mb-4"
             style={{ fontFamily: 'var(--font-editorial)' }}
           >
-            Four parties. One payment.
+            Behind the tap.
           </h2>
+          <p className="text-muted text-lg leading-relaxed mb-2">
+            The classic card model has four parties: cardholder, issuing bank,
+            card network, and acquiring bank. On top of that sits a processor layer
+            that most merchants interact with instead of the banks directly.
+          </p>
           <p className="text-muted text-lg leading-relaxed mb-4">
-            In reality, your payment passes through a coordinated chain of
-            intermediaries — each with a role, a cost, and a delay.
+            Each intermediary has a role, a cost, and a delay.
           </p>
 
           <FlowChain
@@ -171,7 +171,7 @@ export default function ScrollNarrative() {
             highlighted={['Issuer', 'Network', 'Acquirer', 'Processor']}
           />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8" role="list" aria-label="Payment participants">
             {[
               { annotation: getAnnotation('issuer'), label: 'Issuing Bank' },
               { annotation: getAnnotation('network'), label: 'Card Network' },
@@ -179,8 +179,8 @@ export default function ScrollNarrative() {
               { annotation: getAnnotation('processor'), label: 'Processor' },
             ].map(({ annotation, label }) => (
               <AnnotationCard key={label} annotation={annotation} position="bottom">
-                <div className="p-3 bg-surface rounded-lg border border-border hover:border-accent/30 transition-colors text-center cursor-pointer w-full">
-                  <span className="text-xs text-accent block mb-1">ⓘ</span>
+                <div className="p-3 bg-surface rounded-lg border border-border hover:border-accent/30 transition-colors text-center cursor-pointer w-full" role="listitem">
+                  <span className="text-xs text-accent block mb-1" aria-hidden="true">ⓘ</span>
                   <span className="text-sm text-foreground">{label}</span>
                 </div>
               </AnnotationCard>
@@ -189,7 +189,7 @@ export default function ScrollNarrative() {
 
           <ScaleCallout
             stat="791 billion"
-            text="Globally, card networks handled roughly 791 billion transactions last year. Every one passed through a chain like this."
+            text="Globally, card networks handled roughly 791 billion transactions in 2024. Every one passed through a chain like this."
           />
         </Scene>
 
@@ -203,11 +203,12 @@ export default function ScrollNarrative() {
             Your $100 does not arrive intact.
           </h2>
           <p className="text-muted text-lg leading-relaxed mb-8">
-            Fees peel away at every layer. The merchant receives less than
-            what the customer paid.
+            With blended pricing, the merchant sees one fee — typically 2.9% + $0.30
+            for a domestic online card payment. Inside that rate, revenue is split
+            between the issuing bank, the network, and the processor.
           </p>
 
-          {/* Visual fee breakdown */}
+          {/* Visual fee breakdown — blended model */}
           <div className="relative my-10">
             {/* Gross amount bar */}
             <div className="h-12 bg-accent/20 rounded-lg relative overflow-hidden mb-1">
@@ -224,25 +225,13 @@ export default function ScrollNarrative() {
               </div>
             </div>
 
-            {/* Fee layers peeling away */}
+            {/* Fee layer — single blended rate */}
             <div className="pl-4 border-l border-border ml-6 mt-4 space-y-1">
               <FeeLayer
-                label="Processor fee (2.9% + $0.30)"
+                label="Blended processor fee (2.9% + $0.30)"
                 amount="-$3.20"
                 color="var(--color-fee-processor)"
                 annotation={getAnnotation('processor')}
-              />
-              <FeeLayer
-                label="Interchange (→ issuing bank)"
-                amount="-$1.80"
-                color="var(--color-fee-interchange)"
-                annotation={getAnnotation('interchange')}
-              />
-              <FeeLayer
-                label="Network assessment"
-                amount="-$0.13"
-                color="var(--color-fee-network)"
-                annotation={getAnnotation('network')}
               />
             </div>
 
@@ -251,19 +240,25 @@ export default function ScrollNarrative() {
               <div className="h-12 bg-success/15 rounded-lg relative overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  whileInView={{ width: '94.87%' }}
+                  whileInView={{ width: '96.8%' }}
                   transition={{ duration: 1.5, delay: 0.8 }}
                   viewport={{ once: true }}
                   className="h-full bg-success/10 rounded-lg"
                 />
                 <div className="absolute inset-0 flex items-center justify-between px-4">
                   <span className="text-sm text-success font-mono font-medium">
-                    $94.87
+                    $96.80
                   </span>
                   <span className="text-xs text-muted">Net to Merchant</span>
                 </div>
               </div>
             </div>
+
+            {/* Educational note */}
+            <p className="text-xs text-muted/50 mt-4 pl-10 italic">
+              Inside that $3.20: roughly $1.80 goes to the issuing bank (interchange),
+              $0.13 to the card network, and the remainder to the processor.
+            </p>
           </div>
         </Scene>
 
@@ -344,8 +339,7 @@ export default function ScrollNarrative() {
           <p className="text-muted text-lg leading-relaxed mb-8">
             Payment success is probabilistic, not guaranteed. Soft declines
             from temporary issues — insufficient funds, network timeouts, issuer
-            throttling — can often be recovered with intelligent retry logic.
-            All of them pass through systems of trust.
+            throttling — can sometimes be recovered with retry logic.
           </p>
 
           <AnnotationCard annotation={getAnnotation('retry')} position="bottom" block>
@@ -353,7 +347,7 @@ export default function ScrollNarrative() {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center shrink-0">
-                    <span className="text-danger text-xs">✕</span>
+                    <span className="text-danger text-xs" aria-hidden="true">✕</span>
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-foreground">Attempt 1</div>
@@ -362,12 +356,12 @@ export default function ScrollNarrative() {
                   <span className="text-xs font-mono text-danger">Failed</span>
                 </div>
                 <div className="flex items-center gap-4 pl-3">
-                  <div className="w-px h-6 bg-border ml-[14px]" />
-                  <span className="text-xs text-muted">Smart retry after 4 hours</span>
+                  <div className="w-px h-6 bg-border ml-[14px]" aria-hidden="true" />
+                  <span className="text-xs text-muted">Retry after 4 hours</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center shrink-0">
-                    <span className="text-success text-xs">✓</span>
+                    <span className="text-success text-xs" aria-hidden="true">✓</span>
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-foreground">Attempt 2</div>
@@ -397,7 +391,7 @@ export default function ScrollNarrative() {
 
           <ScaleCallout
             stat="324 million annually"
-            text="Chargebacks are not edge cases. Global chargeback volume is projected to reach 324 million transactions per year by 2028 — systemic friction built into the system."
+            text="Chargebacks are not edge cases. Global chargeback volume is projected to reach 324 million transactions per year by 2028."
           />
 
           <AnnotationCard annotation={getAnnotation('chargeback')} position="bottom" block>
@@ -405,7 +399,7 @@ export default function ScrollNarrative() {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-[var(--color-chargeback)]/20 flex items-center justify-center shrink-0">
-                    <span className="text-[var(--color-chargeback)] text-xs">⟲</span>
+                    <span className="text-[var(--color-chargeback)] text-xs" aria-hidden="true">⟲</span>
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-foreground">Cardholder files dispute</div>
@@ -414,12 +408,12 @@ export default function ScrollNarrative() {
                   <span className="text-xs font-mono text-[var(--color-chargeback)]">Day 0</span>
                 </div>
                 <div className="flex items-center gap-4 pl-3">
-                  <div className="w-px h-6 bg-border ml-[14px]" />
+                  <div className="w-px h-6 bg-border ml-[14px]" aria-hidden="true" />
                   <span className="text-xs text-muted">Funds pulled back: Issuer → Network → Acquirer → Processor → Merchant</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-8 h-8 rounded-full bg-[var(--color-chargeback)]/20 flex items-center justify-center shrink-0">
-                    <span className="text-[var(--color-chargeback)] text-xs">$</span>
+                    <span className="text-[var(--color-chargeback)] text-xs" aria-hidden="true">$</span>
                   </div>
                   <div className="flex-1">
                     <div className="text-sm text-foreground">Merchant debited + chargeback fee</div>
@@ -442,14 +436,14 @@ export default function ScrollNarrative() {
             What does the processor actually do?
           </h2>
           <p className="text-muted text-lg leading-relaxed mb-4">
-            Without a processor, a merchant would need to negotiate directly with
-            an acquiring bank, integrate with each card network, build fraud detection,
-            handle PCI compliance, manage retries, and reconcile every transaction manually.
+            Without a processor, a merchant would typically need to negotiate directly with
+            an acquiring bank, integrate with card networks, build fraud screening,
+            handle PCI compliance, and reconcile transactions manually.
           </p>
           <p className="text-muted text-lg leading-relaxed mb-10">
-            The processor sits between the merchant and the rest of the system.
-            It orchestrates every step — from the moment a customer enters their
-            card number to the moment the merchant receives their payout.
+            The processor sits between the merchant and the acquiring layer.
+            Depending on configuration, it can coordinate much of the payment
+            lifecycle on the merchant&apos;s behalf.
           </p>
 
           {/* Detailed breakdown */}
@@ -457,40 +451,40 @@ export default function ScrollNarrative() {
             {[
               {
                 icon: '⟨⟩',
-                title: 'Single API, many acquirers',
-                body: 'One integration replaces direct relationships with acquiring banks. The processor routes each transaction to the optimal acquirer based on card type, geography, and success rates.',
+                title: 'Unified API layer',
+                body: 'A single integration can replace direct bank relationships for many merchants. Some processors can route transactions to different acquirers based on card type or geography.',
               },
               {
                 icon: '⊘',
-                title: 'Fraud and risk scoring',
-                body: 'Before forwarding to the acquirer, the processor evaluates the transaction for fraud signals — velocity checks, device fingerprinting, address verification — and decides whether to block, flag, or approve.',
+                title: 'Fraud and risk screening',
+                body: 'Before forwarding to the acquirer, the processor can evaluate fraud signals — velocity checks, device fingerprinting, address verification — and decide whether to block, flag, or allow the transaction.',
               },
               {
                 icon: '⇄',
                 title: 'Network routing',
-                body: 'Some transactions can be routed through multiple networks. The processor selects the path with the best combination of cost, speed, and approval rate.',
+                body: 'In some configurations, transactions can be routed through multiple networks. The processor may select the path with a better combination of cost and approval rate.',
               },
               {
                 icon: '↻',
-                title: 'Decline recovery and retry',
-                body: 'When a payment fails with a soft decline (temporary issue), the processor can automatically retry at optimal intervals — recovering ~15% of otherwise-lost subscription revenue.',
+                title: 'Decline recovery',
+                body: 'When a payment fails with a soft decline, the processor can retry at a later time. For recurring billing, this can help recover a portion of otherwise-lost revenue.',
               },
               {
                 icon: '≡',
                 title: 'Settlement reconciliation',
-                body: 'The processor tracks every transaction through clearing and settlement, matching what was authorized against what was actually settled, and flagging discrepancies.',
+                body: 'The processor tracks transactions through clearing and settlement, matching authorizations against actual settled amounts and flagging discrepancies.',
               },
               {
                 icon: '→',
-                title: 'Payout orchestration',
-                body: 'After settlement, the processor calculates the net amount (gross minus all fees), holds reserves if needed, and initiates the payout to the merchant\'s bank account on the agreed schedule.',
+                title: 'Payout coordination',
+                body: 'After settlement, the processor calculates the net amount, holds reserves if needed, and initiates the payout to the merchant on the agreed schedule.',
               },
             ].map((item) => (
               <div
                 key={item.title}
                 className="flex gap-4 p-4 bg-surface border border-border rounded-xl"
               >
-                <span className="text-lg text-accent font-mono mt-0.5 shrink-0 w-8 text-center">
+                <span className="text-lg text-accent font-mono mt-0.5 shrink-0 w-8 text-center" aria-hidden="true">
                   {item.icon}
                 </span>
                 <div>
@@ -500,11 +494,6 @@ export default function ScrollNarrative() {
               </div>
             ))}
           </div>
-
-          <ScaleCallout
-            stat="$14.2 trillion"
-            text="Visa alone processed 257.5 billion transactions and $14.2 trillion in payments volume in fiscal 2025. The scale of what processors orchestrate is difficult to overstate."
-          />
 
           <p className="text-sm text-muted/60 text-center italic mt-4">
             The processor abstracts complexity. It does not remove it.

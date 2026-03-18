@@ -1,41 +1,57 @@
 import { PaymentScenario, FeeBreakdown } from './types';
 
-const BASE_FEES = {
-  processor_percent: 0.029,
+/**
+ * Fee model uses BLENDED PRICING by default.
+ *
+ * The 2.9% + $0.30 is the all-in merchant-facing fee for a standard
+ * domestic online card payment (Stripe-style blended pricing).
+ * Interchange and network fees are the underlying economics
+ * inside that blended rate — shown separately only in the
+ * "system economics" educational layer, not added on top.
+ *
+ * Cross-border surcharges and platform fees ARE additive.
+ */
+
+const BLENDED_RATE = {
+  percent: 0.029,
   fixed: 0.30,
-  interchange: 0.018,
-  network: 0.0013,
+};
+
+// Underlying economics (educational — within the blended rate)
+const SYSTEM_ECONOMICS = {
+  interchange_percent: 0.018,
+  network_percent: 0.0013,
+  // Processor margin is the remainder of the blended rate
 };
 
 export function calculateFees(scenario: PaymentScenario): FeeBreakdown {
   const { amount } = scenario;
 
-  // Processor fee (e.g. Stripe): 2.9% + $0.30
-  let processorFee = amount * BASE_FEES.processor_percent + BASE_FEES.fixed;
+  // Blended processor fee: 2.9% + $0.30 (all-in merchant-facing fee)
+  let processorFee = amount * BLENDED_RATE.percent + BLENDED_RATE.fixed;
 
-  // Interchange: 1.8% baseline, premium cards cost more
-  let interchangeRate = BASE_FEES.interchange;
+  // Underlying economics within the blended rate (educational)
+  let interchangeRate = SYSTEM_ECONOMICS.interchange_percent;
   if (scenario.isPremiumCard) interchangeRate += 0.005;
   if (scenario.isSubscription) interchangeRate -= 0.002;
   if (scenario.isCardPresent) interchangeRate -= 0.004;
   const interchangeFee = amount * Math.max(interchangeRate, 0.01);
+  const networkFee = amount * SYSTEM_ECONOMICS.network_percent;
 
-  // Network fee
-  const networkFee = amount * BASE_FEES.network;
-
-  // Cross-border fee
+  // Cross-border fee IS additive (separate from blended rate)
   let crossBorderFee = 0;
   if (!scenario.isDomestic) {
-    crossBorderFee = amount * 0.015; // 1.5% cross-border + FX
-    processorFee += amount * 0.01; // additional processor surcharge
+    crossBorderFee = amount * 0.015; // 1.5% cross-border + FX surcharge
+    processorFee += amount * 0.01;   // additional processor surcharge for intl
   }
 
-  // Platform fee
+  // Platform fee IS additive
   const platformFee = scenario.platformTakeRate
     ? amount * scenario.platformTakeRate
     : 0;
 
-  const totalFees = processorFee + interchangeFee + networkFee + crossBorderFee + platformFee;
+  // Total merchant-facing fees: blended rate + any additive surcharges
+  const totalFees = processorFee + crossBorderFee + platformFee;
   const netToMerchant = amount - totalFees;
 
   // Settlement timing
@@ -48,9 +64,9 @@ export function calculateFees(scenario: PaymentScenario): FeeBreakdown {
   if (!scenario.isDomestic) payoutDays = [payoutDays[0] + 1, payoutDays[1] + 2];
 
   // Retry impact
-  let retryImpact = 'No retry configured';
+  let retryImpact = '';
   if (scenario.retryEnabled) {
-    retryImpact = 'Automatic retry on soft decline — ~15% recovery rate on failed payments';
+    retryImpact = 'Smart retry enabled — can recover ~15% of soft-declined payments';
   }
 
   return {
@@ -93,6 +109,6 @@ export const DEFAULT_SCENARIO: PaymentScenario = {
   merchantCountry: 'US',
   customerCountry: 'US',
   isFasterPayout: false,
-  retryEnabled: true,
+  retryEnabled: false,
   platformTakeRate: null,
 };

@@ -3,6 +3,13 @@
 import { motion } from 'framer-motion';
 import type { PaymentScenario } from '@/lib/types';
 
+const COUNTRY_OPTIONS = [
+  { value: 'US', label: 'United States' },
+  { value: 'UK', label: 'United Kingdom' },
+  { value: 'DE', label: 'Germany' },
+  { value: 'JP', label: 'Japan' },
+];
+
 interface Props {
   scenario: PaymentScenario;
   onChange: (scenario: PaymentScenario) => void;
@@ -109,13 +116,7 @@ export default function ControlPanel({ scenario, onChange }: Props) {
           <Select
             label="Merchant Country"
             value={scenario.merchantCountry}
-            options={[
-              { value: 'US', label: 'United States' },
-              { value: 'UK', label: 'United Kingdom' },
-              { value: 'DE', label: 'Germany' },
-              { value: 'JP', label: 'Japan' },
-              { value: 'SG', label: 'Singapore' },
-            ]}
+            options={COUNTRY_OPTIONS}
             onChange={(v) => update({
               merchantCountry: v,
               isDomestic: v === scenario.customerCountry,
@@ -124,13 +125,7 @@ export default function ControlPanel({ scenario, onChange }: Props) {
           <Select
             label="Customer Country"
             value={scenario.customerCountry}
-            options={[
-              { value: 'US', label: 'United States' },
-              { value: 'UK', label: 'United Kingdom' },
-              { value: 'DE', label: 'Germany' },
-              { value: 'JP', label: 'Japan' },
-              { value: 'BR', label: 'Brazil' },
-            ]}
+            options={COUNTRY_OPTIONS}
             onChange={(v) => update({
               customerCountry: v,
               isDomestic: v === scenario.merchantCountry,

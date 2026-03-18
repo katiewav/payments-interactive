@@ -12,13 +12,13 @@ export const SCENARIO_PRESETS: ScenarioConfig[] = [
   {
     id: 'baseline',
     label: 'Baseline',
-    description: 'A standard $100 domestic online card payment',
+    description: 'Standard domestic online card payment, blended pricing',
     scenario: { ...DEFAULT_SCENARIO },
   },
   {
     id: 'cross-border',
     label: 'Cross-border',
-    description: 'Payment from a customer in the UK to a US merchant',
+    description: 'UK customer paying a US merchant — additional FX fees',
     scenario: {
       ...DEFAULT_SCENARIO,
       isDomestic: false,
@@ -29,7 +29,7 @@ export const SCENARIO_PRESETS: ScenarioConfig[] = [
   {
     id: 'failed-retry',
     label: 'Failed + Retried',
-    description: 'Initial decline followed by a successful retry',
+    description: 'Soft decline recovered by smart retry logic',
     scenario: {
       ...DEFAULT_SCENARIO,
       retryEnabled: true,
@@ -38,7 +38,7 @@ export const SCENARIO_PRESETS: ScenarioConfig[] = [
   {
     id: 'chargeback',
     label: 'Chargeback',
-    description: 'Customer disputes — funds reverse back through the chain',
+    description: 'Cardholder disputes — funds reverse through the chain',
     scenario: {
       ...DEFAULT_SCENARIO,
       retryEnabled: false,
@@ -47,7 +47,7 @@ export const SCENARIO_PRESETS: ScenarioConfig[] = [
   {
     id: 'subscription',
     label: 'Subscription',
-    description: 'Recurring subscription payment with optimized interchange',
+    description: 'Recurring billing with retry and optimized interchange',
     scenario: {
       ...DEFAULT_SCENARIO,
       isSubscription: true,
@@ -56,8 +56,8 @@ export const SCENARIO_PRESETS: ScenarioConfig[] = [
   },
   {
     id: 'platform',
-    label: 'Platform / Marketplace',
-    description: 'Payment through a marketplace with a platform take rate',
+    label: 'Marketplace',
+    description: 'Platform takes a cut before merchant payout',
     scenario: {
       ...DEFAULT_SCENARIO,
       platformTakeRate: 0.10,
