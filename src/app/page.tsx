@@ -1,197 +1,315 @@
 'use client';
 
-import { useState, useRef, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import Hero from '@/components/Hero';
-import ScrollNarrative from '@/components/ScrollNarrative';
-import PaymentFlowDiagram from '@/components/PaymentFlowDiagram';
-import ControlPanel from '@/components/ControlPanel';
-import FeeBreakdown from '@/components/FeeBreakdown';
-import ScenarioSwitcher from '@/components/ScenarioSwitcher';
-import ScenarioImpactBanner from '@/components/ScenarioImpactBanner';
-import StakeholderReference from '@/components/StakeholderReference';
-import FinalTakeaway from '@/components/FinalTakeaway';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import PersistentDiagram from '@/components/PersistentDiagram';
+import ChapterNarrative from '@/components/ChapterNarrative';
 import ThemeToggle from '@/components/ThemeToggle';
-import ZoomOut from '@/components/ZoomOut';
-import { DEFAULT_SCENARIO, calculateFees } from '@/lib/paymentModel';
-import type { PaymentScenario, ScenarioPreset } from '@/lib/types';
-import { useInView } from '@/lib/hooks';
+import MethodologyNote from '@/components/MethodologyNote';
+import { CHAPTERS, type ChapterId } from '@/lib/chapters';
 
 export default function Home() {
-  const [scenario, setScenario] = useState<PaymentScenario>(DEFAULT_SCENARIO);
-  const [activePreset, setActivePreset] = useState<ScenarioPreset | null>('baseline');
-  const narrativeRef = useRef<HTMLDivElement>(null);
+  const [activeChapter, setActiveChapter] = useState<ChapterId>('hero');
+  const [failureMode, setFailureMode] = useState<'none' | 'decline' | 'fraud' | 'chargeback'>('none');
+  const [amount, setAmount] = useState(100);
+  const chapterRefs = useRef<Map<ChapterId, HTMLElement>>(new Map());
+  const narrativeStartRef = useRef<HTMLDivElement>(null);
 
-  const fees = useMemo(() => calculateFees(scenario), [scenario]);
+  // Intersection observer to detect which chapter is in view
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    const chapterIds: ChapterId[] = CHAPTERS.map(c => c.id);
 
-  const scrollToNarrative = useCallback(() => {
-    narrativeRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chapterIds.forEach((id) => {
+      const el = chapterRefs.current.get(id);
+      if (!el) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setActiveChapter(id);
+              // Reset failure mode when leaving the failure chapter
+              if (id !== 'failure') {
+                setFailureMode('none');
+              } else if (failureMode === 'none') {
+                setFailureMode('decline');
+              }
+            }
+          });
+        },
+        { threshold: 0.5, rootMargin: '-10% 0px -40% 0px' }
+      );
+      observer.observe(el);
+      observers.push(observer);
+    });
+
+    return () => observers.forEach(o => o.disconnect());
+  }, [failureMode]);
+
+  const scrollToStart = useCallback(() => {
+    narrativeStartRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const handleScenarioChange = useCallback((newScenario: PaymentScenario) => {
-    setScenario(newScenario);
-    setActivePreset(null);
+  const setChapterRef = useCallback((id: ChapterId, el: HTMLElement | null) => {
+    if (el) chapterRefs.current.set(id, el);
   }, []);
 
-  const handlePresetSelect = useCallback((newScenario: PaymentScenario, preset: ScenarioPreset) => {
-    setScenario(newScenario);
-    setActivePreset(preset);
-  }, []);
-
-  const { ref: interactiveSectionRef, isInView: interactiveInView } = useInView(0.05);
+  // Progress indicator
+  const chapterIndex = CHAPTERS.findIndex(c => c.id === activeChapter);
+  const totalChapters = CHAPTERS.filter(c => c.number !== null).length;
+  const currentNumber = CHAPTERS.find(c => c.id === activeChapter)?.number;
 
   return (
     <main className="relative">
-      {/* Theme toggle */}
       <ThemeToggle />
 
-      {/* Hero */}
-      <Hero onCtaClick={scrollToNarrative} />
-
-      {/* Scroll Narrative */}
-      <div ref={narrativeRef}>
-        <ScrollNarrative />
-      </div>
-
-      {/* Zoom Out moment */}
-      <ZoomOut />
-
-      {/* Transition into interactive */}
-      <section className="py-12 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      {/* Progress indicator — fixed */}
+      <AnimatePresence>
+        {activeChapter !== 'hero' && activeChapter !== 'takeaway' && currentNumber && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col items-center gap-2"
           >
-            <p className="text-xs tracking-[0.3em] uppercase text-muted mb-6">
-              Interactive Explorer
-            </p>
-            <h2
-              className="text-3xl md:text-5xl font-light leading-tight mb-6"
-              style={{ fontFamily: 'var(--font-editorial)' }}
-            >
-              Now, trace your own payment.
-            </h2>
-            <p className="text-muted text-lg leading-relaxed max-w-xl mx-auto">
-              Adjust the inputs below and watch how the flow, fees, and timing change
-              across different payment scenarios.
-            </p>
+            {CHAPTERS.filter(c => c.number !== null).map((ch) => (
+              <button
+                key={ch.id}
+                onClick={() => chapterRefs.current.get(ch.id)?.scrollIntoView({ behavior: 'smooth' })}
+                className={`w-2 h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  ch.id === activeChapter
+                    ? 'bg-accent scale-125'
+                    : ch.number! <= (currentNumber ?? 0)
+                    ? 'bg-accent/40'
+                    : 'bg-border'
+                }`}
+                aria-label={`Go to chapter ${ch.number}`}
+              />
+            ))}
+            <span className="text-[9px] text-muted/40 font-mono mt-1">{currentNumber}/{totalChapters}</span>
           </motion.div>
-        </div>
-      </section>
+        )}
+      </AnimatePresence>
 
-      {/* Interactive Section */}
-      <section className="px-6 pb-12">
-        <div ref={interactiveSectionRef} className="max-w-6xl mx-auto">
+      {/* ═══════════════════ HERO ═══════════════════ */}
+      <section
+        ref={(el) => setChapterRef('hero', el)}
+        className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
+      >
+        {/* Subtle grid background */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+          className="relative z-10 max-w-3xl text-center"
+        >
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="text-[10px] tracking-[0.3em] uppercase text-muted/50 mb-6"
+          >
+            An interactive explainer
+          </motion.p>
+
+          <h1
+            className="text-4xl sm:text-5xl md:text-7xl font-light leading-[1.1] mb-8"
+            style={{ fontFamily: 'var(--font-editorial)' }}
+          >
+            The invisible supply chain{' '}
+            <span className="text-accent">behind every tap.</span>
+          </h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="text-muted text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-12"
+          >
+            A card payment feels instantaneous. It isn&apos;t. Beneath a single tap is a chain of
+            intermediaries coordinating data, risk, and money across different time horizons.
+          </motion.p>
+
+          {/* Mini teaser diagram */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={interactiveInView ? { opacity: 1 } : {}}
-            transition={{ duration: 0.6 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9, duration: 1 }}
+            className="flex items-center justify-center gap-4 mb-12"
           >
-            {/* Scenario Switcher */}
-            <div className="mb-4">
-              <ScenarioSwitcher
-                activePreset={activePreset}
-                onSelect={handlePresetSelect}
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-12 h-12 rounded-full border border-accent/40 flex items-center justify-center">
+                <span className="text-accent text-sm font-mono">$100</span>
+              </div>
+              <span className="text-[10px] text-muted">Customer</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <motion.div
+                className="h-px bg-accent/30"
+                initial={{ width: 0 }}
+                animate={{ width: 60 }}
+                transition={{ delay: 1.2, duration: 0.8 }}
+              />
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.3 }}
+                transition={{ delay: 1.5, duration: 0.5 }}
+                className="text-accent text-xs"
+              >?</motion.span>
+              <motion.div
+                className="h-px bg-accent/30"
+                initial={{ width: 0 }}
+                animate={{ width: 60 }}
+                transition={{ delay: 1.8, duration: 0.8 }}
               />
             </div>
-
-            {/* Impact Banner — what changed vs baseline */}
-            <div className="mb-4">
-              <ScenarioImpactBanner
-                scenario={scenario}
-                fees={fees}
-                activePreset={activePreset}
-              />
-            </div>
-
-            {/* Narrative summary — moved up for prominence */}
-            <motion.div
-              key={`summary-${JSON.stringify(scenario)}-${activePreset}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.4 }}
-              className="mb-4 bg-surface border border-border rounded-xl px-5 py-4"
-            >
-              <p className="text-muted leading-relaxed text-sm">
-                {getSummary(scenario, fees, activePreset)}
-              </p>
-            </motion.div>
-
-            {/* Stakeholder reference — collapsible definitions */}
-            <StakeholderReference />
-
-            {/* Flow Diagram */}
-            <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 mb-6">
-              <h3 className="text-xs tracking-[0.25em] uppercase text-muted mb-6">
-                {activePreset === 'chargeback' ? 'Chargeback Flow' : 'Payment Flow'}
-              </h3>
-              <PaymentFlowDiagram
-                scenario={scenario}
-                fees={fees}
-                showRetryPath={scenario.retryEnabled}
-                activePreset={activePreset}
-              />
-            </div>
-
-            {/* Controls + Breakdown Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ControlPanel scenario={scenario} onChange={handleScenarioChange} />
-              <FeeBreakdown fees={fees} />
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-12 h-12 rounded-full border border-border flex items-center justify-center">
+                <span className="text-muted text-xs font-mono">?</span>
+              </div>
+              <span className="text-[10px] text-muted">Merchant</span>
             </div>
           </motion.div>
-        </div>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 0.6 }}
+            onClick={scrollToStart}
+            className="group inline-flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors cursor-pointer"
+          >
+            <span>What actually happens?</span>
+            <motion.span
+              animate={{ y: [0, 4, 0] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="text-accent"
+            >
+              ↓
+            </motion.span>
+          </motion.button>
+        </motion.div>
       </section>
 
-      {/* Final Takeaway */}
-      <FinalTakeaway />
+      {/* ═══════════════════ SCROLLYTELLING CHAPTERS ═══════════════════ */}
+      <div ref={narrativeStartRef} />
+
+      {CHAPTERS.filter(c => c.id !== 'hero' && c.id !== 'takeaway').map((chapter) => (
+        <section
+          key={chapter.id}
+          ref={(el) => setChapterRef(chapter.id, el)}
+          className="min-h-screen px-6 py-16 md:py-24"
+        >
+          <div className="max-w-7xl mx-auto">
+            {/* Two-column layout: narrative left, diagram right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+              {/* Narrative panel */}
+              <div className="lg:col-span-5 lg:sticky lg:top-24 lg:self-start">
+                <ChapterNarrative
+                  activeChapter={chapter.id}
+                  onFailureModeChange={setFailureMode}
+                  failureMode={failureMode}
+                  amount={amount}
+                  onAmountChange={setAmount}
+                />
+              </div>
+
+              {/* Persistent diagram panel */}
+              <div className="lg:col-span-7">
+                <div className="lg:sticky lg:top-16 bg-surface border border-border rounded-2xl p-4 md:p-6">
+                  <PersistentDiagram
+                    activeChapter={chapter.id}
+                    failureMode={chapter.id === 'failure' ? failureMode : 'none'}
+                    amount={amount}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ))}
+
+      {/* ═══════════════════ FINAL TAKEAWAY ═══════════════════ */}
+      <section
+        ref={(el) => setChapterRef('takeaway', el)}
+        className="min-h-[70vh] flex flex-col items-center justify-center px-6 py-20 relative"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          viewport={{ once: true }}
+          className="max-w-2xl text-center"
+        >
+          <div className="w-16 h-px bg-accent mx-auto mb-10" />
+
+          <h2
+            className="text-3xl md:text-5xl font-light leading-tight mb-8"
+            style={{ fontFamily: 'var(--font-editorial)' }}
+          >
+            A payment is not a straight line.
+          </h2>
+
+          <p className="text-muted text-lg leading-relaxed mb-10">
+            It is a temporary coordination between institutions with different
+            incentives, timeframes, and risk models.
+          </p>
+
+          {/* Three sticky takeaways */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+            {[
+              { accent: '01', text: 'Approval is not settlement' },
+              { accent: '02', text: 'Simplicity is mostly interface' },
+              { accent: '03', text: 'Infrastructure is complexity compression' },
+            ].map((item) => (
+              <motion.div
+                key={item.accent}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: parseInt(item.accent) * 0.15, duration: 0.6 }}
+                viewport={{ once: true }}
+                className="bg-surface border border-border rounded-xl p-4"
+              >
+                <span className="text-accent font-mono text-xs block mb-2">{item.accent}</span>
+                <p className="text-sm text-foreground">{item.text}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <p className="text-muted/40 text-sm italic mb-6">
+            &ldquo;The interface suggests finality. The infrastructure does not.&rdquo;
+          </p>
+
+          <div className="h-px bg-border mb-8" />
+
+          {/* Footer */}
+          <div className="space-y-3">
+            <p className="text-muted/50 text-xs">
+              Built as an independent interactive explainer of how digital payments work.
+            </p>
+            <p className="text-muted/40 text-xs">
+              Made by{' '}
+              <a
+                href="https://twitter.com/katiewav"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent/60 hover:text-accent transition-colors"
+              >
+                @katiewav
+              </a>
+            </p>
+            <MethodologyNote />
+          </div>
+        </motion.div>
+      </section>
     </main>
   );
-}
-
-function getSummary(
-  scenario: PaymentScenario,
-  fees: ReturnType<typeof calculateFees>,
-  activePreset: ScenarioPreset | null
-): string {
-  if (activePreset === 'chargeback') {
-    return `A $${scenario.amount.toFixed(2)} payment is disputed by the cardholder. The full $${scenario.amount.toFixed(2)} reverses through the chain — from the issuing bank, through the network, to the acquiring bank, and back to the processor. The merchant loses the original payment plus a chargeback fee (typically $15–$25), totaling $${(scenario.amount + 15).toFixed(2)}–$${(scenario.amount + 25).toFixed(2)}. The dispute process typically takes 60–120 days to resolve.`;
-  }
-
-  const parts: string[] = [];
-
-  parts.push(
-    `A $${scenario.amount.toFixed(2)} ${scenario.isDomestic ? 'domestic' : 'cross-border'} ${
-      scenario.isCardPresent ? 'card-present' : 'online'
-    } payment`
-  );
-
-  if (scenario.isSubscription) parts.push('processed as a recurring subscription');
-  if (scenario.isPremiumCard) parts.push('on a premium card');
-
-  parts.push(
-    `incurs $${fees.totalFees.toFixed(2)} in fees (${(
-      (fees.totalFees / fees.grossAmount) * 100
-    ).toFixed(1)}%)`
-  );
-
-  parts.push(`leaving $${fees.netToMerchant.toFixed(2)} net to the merchant.`);
-
-  parts.push(
-    `Settlement takes ${fees.settlementDays[0]}–${fees.settlementDays[1]} business days, with payout in ${fees.payoutDays[0]}–${fees.payoutDays[1]} days.`
-  );
-
-  if (scenario.retryEnabled) {
-    parts.push('Smart retry is enabled to recover soft declines.');
-  }
-
-  if (scenario.platformTakeRate) {
-    parts.push(
-      `The platform takes a ${(scenario.platformTakeRate * 100).toFixed(0)}% fee ($${fees.platformFee.toFixed(2)}).`
-    );
-  }
-
-  return parts.join(' ');
 }
