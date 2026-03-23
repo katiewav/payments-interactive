@@ -55,9 +55,60 @@ const FAILURE_TEXT: Record<string, string> = {
   chargeback: 'Even after successful settlement, the cardholder can dispute. The issuing bank initiates a forced reversal \u2014 funds flow backward through every intermediary. The merchant loses the payment amount plus a chargeback fee ($15\u2013$25 typical). Resolution takes 60\u2013120 days. The merchant can submit evidence, but the issuer decides.',
 };
 
+function RevealCard({ trigger, children }: { trigger: string; children: React.ReactNode }) {
+  const [revealed, setRevealed] = useState(false);
+  return (
+    <div className="my-3">
+      <motion.button
+        onClick={() => setRevealed(!revealed)}
+        whileTap={{ scale: 0.97 }}
+        className={`w-full text-left text-xs px-4 py-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+          revealed ? 'border-accent/30 bg-accent/5' : 'border-border hover:border-accent/20 bg-surface'
+        }`}
+      >
+        <span className={revealed ? 'text-accent' : 'text-muted'}>{trigger}</span>
+        <motion.span animate={{ rotate: revealed ? 180 : 0 }} className="text-muted/40 text-[10px]">▾</motion.span>
+      </motion.button>
+      <AnimatePresence>
+        {revealed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 py-3 text-xs text-muted/80 leading-relaxed border-l-2 border-accent/20 ml-2 mt-1">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function ClickableBadge({ label, revealText }: { label: string; revealText: string }) {
+  const [clicked, setClicked] = useState(false);
+  return (
+    <motion.button
+      onClick={() => setClicked(!clicked)}
+      whileTap={{ scale: 0.95 }}
+      className="inline-flex items-center gap-1.5 cursor-pointer group"
+    >
+      <span className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+        clicked ? 'border-accent/40 bg-accent/10 text-accent' : 'border-success/30 bg-success/10 text-success hover:border-accent/30'
+      }`}>
+        {clicked ? revealText : label}
+      </span>
+    </motion.button>
+  );
+}
+
 export default function ChapterNarrative({ activeChapter, onFailureModeChange, failureMode, amount, onAmountChange }: Props) {
   const [expandedPill, setExpandedPill] = useState<string | null>(null);
   const [timelineView, setTimelineView] = useState<'customer' | 'system'>('customer');
+  const [expandedFee, setExpandedFee] = useState<string | null>(null);
 
   if (activeChapter === 'hero' || activeChapter === 'takeaway') return null;
 
@@ -79,7 +130,13 @@ export default function ChapterNarrative({ activeChapter, onFailureModeChange, f
               <P>To the customer, a card payment is a single moment: tap, approved, done.</P>
               <P>The mental model is simple &mdash; money moves directly from you to the merchant. $100 in, $100 out.</P>
               <P>This is the version of reality the interface presents. It is not what actually happens.</P>
-              <p className="text-muted/50 text-sm italic mt-6">Scroll to see what&rsquo;s really underneath.</p>
+              <div className="mt-4 mb-2">
+                <ClickableBadge label="Payment approved ✓" revealText="Not settled yet →" />
+              </div>
+              <RevealCard trigger="🔍 What the checkout screen hides">
+                Behind &ldquo;payment approved&rdquo; are at least 5 institutions, 3 time horizons, and multiple points of failure. The customer sees none of this.
+              </RevealCard>
+              <p className="text-muted/50 text-sm italic mt-4">Scroll to see what&rsquo;s really underneath — or click nodes in the diagram to explore.</p>
             </>
           )}
 
@@ -116,6 +173,9 @@ export default function ChapterNarrative({ activeChapter, onFailureModeChange, f
               <P>When you see &ldquo;Payment approved,&rdquo; no money has moved. The issuing bank has only confirmed that funds exist and placed a temporary hold.</P>
               <P>Actual money movement &mdash; settlement &mdash; happens in batch cycles, typically 1&ndash;3 business days later. The funds flow from issuing bank through the network to the acquiring bank, then to the merchant.</P>
               <P>The merchant&rsquo;s payout may take an additional 1&ndash;2 days after settlement.</P>
+              <RevealCard trigger="⏱ Why does settlement take days?">
+                Card networks process in batch cycles, not real-time. They aggregate the day&rsquo;s transactions, net out positions between thousands of banks, and execute wire transfers. This is closer to logistics than to instant messaging.
+              </RevealCard>
               <div className="flex gap-2 mt-4 mb-4">
                 {(['customer', 'system'] as const).map((v) => (
                   <button key={v} onClick={() => setTimelineView(v)}
@@ -160,21 +220,46 @@ export default function ChapterNarrative({ activeChapter, onFailureModeChange, f
               <input type="range" min={10} max={1000} step={5} value={amount} onChange={(e) => onAmountChange(Number(e.target.value))}
                 className="w-full accent-accent" />
               <span className="block text-right text-xs text-muted/60 mb-4">{formatCurrency(amount)}</span>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-sm">
                 {[
-                  { label: 'Interchange (\u2192 issuing bank)', value: interchange },
-                  { label: 'Network assessment', value: network },
-                  { label: 'Processor margin', value: processorMargin },
+                  { id: 'interchange', label: 'Interchange → issuing bank', value: interchange, pct: '1.8%', detail: 'The largest slice. Compensates the issuer for fronting the money and bearing fraud risk. Premium rewards cards = higher interchange = better points for you, higher cost for merchant.' },
+                  { id: 'network', label: 'Network assessment', value: network, pct: '0.13%', detail: 'Visa/Mastercard\'s cut for routing the message between banks. Small per transaction, massive in aggregate across billions of payments.' },
+                  { id: 'processor', label: 'Processor margin', value: processorMargin, pct: '~1%', detail: 'What the processor keeps after passing through interchange and network fees. This funds the API, fraud tools, retry logic, and payout coordination.' },
                 ].map((r) => (
-                  <div key={r.label} className="flex justify-between text-muted">
-                    <span>{r.label}</span><span>{formatCurrency(r.value)}</span>
-                  </div>
+                  <motion.button
+                    key={r.id}
+                    onClick={() => setExpandedFee(expandedFee === r.id ? null : r.id)}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full text-left px-3 py-2 rounded-lg border transition-all cursor-pointer ${
+                      expandedFee === r.id ? 'border-accent/30 bg-accent/5' : 'border-transparent hover:bg-surface'
+                    }`}
+                  >
+                    <div className="flex justify-between text-muted items-center">
+                      <span className="flex items-center gap-2">
+                        {r.label}
+                        <span className="text-[10px] text-muted/40">{r.pct}</span>
+                      </span>
+                      <span className="font-mono">{formatCurrency(r.value)}</span>
+                    </div>
+                    <AnimatePresence>
+                      {expandedFee === r.id && (
+                        <motion.p
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="text-xs text-muted/60 leading-relaxed mt-2 pr-4"
+                        >
+                          {r.detail}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
                 ))}
-                <div className="border-t border-border pt-2 flex justify-between font-medium text-muted">
-                  <span>Total fee</span><span>{formatCurrency(totalFee)}</span>
+                <div className="border-t border-border pt-2 mt-2 px-3 flex justify-between font-medium text-muted">
+                  <span>Total fee</span><span className="font-mono">{formatCurrency(totalFee)}</span>
                 </div>
-                <div className="flex justify-between font-medium">
-                  <span>Net to merchant</span><span>{formatCurrency(netToMerchant)}</span>
+                <div className="px-3 flex justify-between font-medium">
+                  <span>Net to merchant</span><span className="font-mono">{formatCurrency(netToMerchant)}</span>
                 </div>
               </div>
               <p className="text-muted/40 text-xs italic mt-4">Illustrative. Based on typical blended pricing (2.9% + $0.30). Actual rates vary by processor, card type, and merchant agreement.</p>
@@ -185,20 +270,43 @@ export default function ChapterNarrative({ activeChapter, onFailureModeChange, f
             <>
               <Eyebrow>Chapter 5</Eyebrow>
               <Title>What happens when things break</Title>
-              <P>Payment success is probabilistic, not guaranteed. The system fails in distinct ways, each involving different actors and timelines.</P>
-              <div className="flex gap-2 mt-2 mb-4">
-                {([['decline', 'Decline'], ['fraud', 'Fraud review'], ['chargeback', 'Chargeback']] as const).map(([mode, label]) => (
-                  <button key={mode} onClick={() => onFailureModeChange(mode)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${failureMode === mode ? 'border-accent text-accent bg-accent/10' : 'border-border text-muted hover:border-accent/50'}`}>
-                    {label}
-                  </button>
+              <P>Payment success is probabilistic, not guaranteed. Click a failure mode to see how the system responds.</P>
+              <div className="space-y-2 mt-3 mb-4">
+                {([
+                  ['decline', '✕ Decline', 'Issuer rejects', 'border-danger/30 bg-danger/8 text-danger'],
+                  ['fraud', '⚠ Fraud flag', 'Risk engine intervenes', 'border-warning/30 bg-warning/8 text-warning'],
+                  ['chargeback', '↩ Chargeback', 'Post-settlement reversal', 'border-[var(--color-chargeback)]/30 bg-[var(--color-chargeback)]/8 text-[var(--color-chargeback)]'],
+                ] as const).map(([mode, label, sub, activeClasses]) => (
+                  <motion.button
+                    key={mode}
+                    onClick={() => onFailureModeChange(mode)}
+                    whileTap={{ scale: 0.97 }}
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all cursor-pointer ${
+                      failureMode === mode ? activeClasses : 'border-border text-muted hover:border-accent/20 bg-surface'
+                    }`}
+                  >
+                    <span className="text-sm font-medium block">{label}</span>
+                    <span className="text-[11px] text-muted/60">{sub}</span>
+                  </motion.button>
                 ))}
               </div>
               <AnimatePresence mode="wait">
                 {failureMode !== 'none' && (
-                  <motion.p key={failureMode} {...fade} className="text-muted text-[15px] leading-relaxed">
-                    {FAILURE_TEXT[failureMode]}
-                  </motion.p>
+                  <motion.div key={failureMode} {...fade}>
+                    <p className="text-muted text-[15px] leading-relaxed mb-3">
+                      {FAILURE_TEXT[failureMode]}
+                    </p>
+                    {failureMode === 'chargeback' && (
+                      <RevealCard trigger="💰 What does the merchant actually lose?">
+                        The original payment ({formatCurrency(amount)}), plus a chargeback fee ($15–$25), plus the cost of goods already delivered. If chargeback rates exceed ~1%, acquirers may terminate the merchant account entirely.
+                      </RevealCard>
+                    )}
+                    {failureMode === 'decline' && (
+                      <RevealCard trigger="↻ Can the payment be retried?">
+                        Soft declines (insufficient funds, network timeout) can often be retried. Hard declines (stolen card, closed account) cannot. Smart retry systems analyze decline codes and retry at optimal times — recovering ~15% of failed subscription payments.
+                      </RevealCard>
+                    )}
+                  </motion.div>
                 )}
               </AnimatePresence>
             </>

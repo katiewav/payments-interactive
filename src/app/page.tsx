@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PersistentDiagram from '@/components/PersistentDiagram';
 import ChapterNarrative from '@/components/ChapterNarrative';
+import DiagramControls from '@/components/DiagramControls';
 import ThemeToggle from '@/components/ThemeToggle';
 import MethodologyNote from '@/components/MethodologyNote';
 import { CHAPTERS, type ChapterId } from '@/lib/chapters';
@@ -12,6 +13,8 @@ export default function Home() {
   const [activeChapter, setActiveChapter] = useState<ChapterId>('hero');
   const [failureMode, setFailureMode] = useState<'none' | 'decline' | 'fraud' | 'chargeback'>('none');
   const [amount, setAmount] = useState(100);
+  const [activeLayer, setActiveLayer] = useState<'all' | 'data' | 'money' | 'risk' | 'time'>('all');
+  const [simulationStep, setSimulationStep] = useState(-1);
   const chapterRefs = useRef<Map<ChapterId, HTMLElement>>(new Map());
   const narrativeStartRef = useRef<HTMLDivElement>(null);
 
@@ -224,12 +227,23 @@ export default function Home() {
 
               {/* Persistent diagram panel */}
               <div className="lg:col-span-7">
-                <div className="lg:sticky lg:top-16 bg-surface border border-border rounded-2xl p-4 md:p-6">
-                  <PersistentDiagram
+                <div className="lg:sticky lg:top-16">
+                  <DiagramControls
+                    activeLayer={activeLayer}
+                    onLayerChange={setActiveLayer}
+                    simulationStep={simulationStep}
+                    onSimulationStep={setSimulationStep}
                     activeChapter={chapter.id}
-                    failureMode={chapter.id === 'failure' ? failureMode : 'none'}
-                    amount={amount}
                   />
+                  <div className="bg-surface border border-border rounded-2xl p-4 md:p-6">
+                    <PersistentDiagram
+                      activeChapter={chapter.id}
+                      failureMode={chapter.id === 'failure' ? failureMode : 'none'}
+                      amount={amount}
+                      activeLayer={activeLayer}
+                      simulationStep={simulationStep}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
